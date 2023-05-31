@@ -61,7 +61,7 @@ class HeadFrame(ctk.CTkToplevel):
 				values=(worker._id, worker.full_name)
 			)
 
-		button = ctk.CTkButton(self, text='Установить ответственного', command=self.action)
+		button = ctk.CTkButton(self, text='Назначить ответственного', command=self.action)
 		button.grid(row=3, column=0, pady=(25, 5), columnspan=2)
 
 	def action(self):

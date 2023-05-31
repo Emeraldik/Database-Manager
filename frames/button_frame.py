@@ -68,7 +68,7 @@ class DataButtonFrames(ctk.CTkFrame):
 				self.button2.grid(row=0, column=1, sticky='nsew', padx=(5, 5), pady=(5, 5))
 				self.button3 = DataButton(self, text='Изменить проект', command=self.change_action)
 				self.button3.grid(row=0, column=2, sticky='nsew', padx=(5, 5), pady=(5, 5))
-				self.button4 = DataButton(self, text='Установить ответственного', command=self.set_head)
+				self.button4 = DataButton(self, text='Назначить ответственного', command=self.set_head)
 				self.button4.grid(row=0, column=3, sticky='nsew', padx=(5, 5), pady=(5, 5))
 			case 'Распределение зарплаты сотрудников':
 				self.grid_columnconfigure((0, 1, 2), weight=1)
