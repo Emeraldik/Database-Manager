@@ -2,9 +2,93 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
 
+from math import isnan
+
 import modules.db_classes as db_get
 from modules.database import execute, fetch_one
-from math import isnan
+from frames.exception_frame import exception
+
+
+class HeadFrame(ctk.CTkToplevel):
+	def __init__(self, master, data, **kwargs):
+		super().__init__(master, **kwargs)
+		self.master = master
+		self.data = data
+
+		self.title(f'Изменение ответственного за проект')
+		self.geometry('600x450')
+		self.resizable(False, False)
+		self.grid_columnconfigure(0, weight=1)
+
+		workers = db_get.get_workers()
+		project = db_get.get_projects().get(self.data, db_get.zero_project)
+		
+		self.head_of_project = workers.get(db_get.get_head_projects().get(self.data, db_get.zero_head).worker_id, db_get.zero_worker)
+		
+		label_project = ctk.CTkLabel(self, text=f'Ответственный за проект : {project.name}')
+		label_project.grid(row=0, column=0, pady=(15, 5), columnspan=2)
+
+		label_head = ctk.CTkLabel(self, text=f'(ID : {self.head_of_project._id}) : {self.head_of_project.full_name}')
+		label_head.grid(row=1, column=0, pady=(15, 5), columnspan=2)
+
+		self.columns = ('ID', 'Full Name')
+
+		self.treescroll = ttk.Scrollbar(self)
+		self.treescroll.grid(row=2, column=1, sticky='ns')
+
+		self.treeview = ttk.Treeview(
+			self, 
+			yscrollcommand=self.treescroll.set, 
+			show='headings', 
+			columns=self.columns, 
+			height=13,
+			selectmode='browse'
+		)
+
+		self.treeview.grid(row=2, column=0, sticky='nsew', padx=(15, 0))
+
+		self.treescroll.config(command=self.treeview.yview)
+
+		for index, col_name in enumerate(self.columns):
+			self.treeview.heading(col_name, text=col_name, anchor='center')
+			self.treeview.column(col_name, width=100, anchor='center')
+
+		self.treeview.column(0, width=10)
+		self.treeview.column(1, width=200)
+
+		for worker in dict(filter(lambda item: item[1].project_id == self.data, workers.items())).values():
+			self.treeview.insert('', tk.END, 
+				values=(worker._id, worker.full_name)
+			)
+
+		button = ctk.CTkButton(self, text='Установить ответственного', command=self.action)
+		button.grid(row=3, column=0, pady=(25, 5), columnspan=2)
+
+	def action(self):
+		selection = self.treeview.selection()
+		if not selection:
+			exception('Ничего не выбрано')
+			return
+
+		item = self.treeview.item(selection)['values'][0]
+		if self.head_of_project._id == 0:
+			sql = '''
+				INSERT INTO Project_Worker
+				(worker_id, project_id)
+				VALUES
+				(%s, %s)
+			'''
+		else:
+			sql = '''
+				UPDATE Project_Worker
+				SET worker_id = %s
+				WHERE project_id = %s
+			'''
+
+		execute(sql, (item, self.data))
+
+		self.master.update_tables()
+		self.destroy()
 
 
 class ChangeFrame(ctk.CTkToplevel):
@@ -26,16 +110,14 @@ class ChangeFrame(ctk.CTkToplevel):
 					'job_title' : 'Job Title',
 					'age' : 'Age (int)',
 					'work_exp' : 'Work Experience (int)',
-					'salary' : 'Salary amount (float)'
 				}
 				worker = db_get.get_workers().get(self.data, db_get.zero_worker)
-				salary = db_get.get_salaries().get(worker._id)
+				#salary = db_get.get_salaries().get(worker._id)
 				values = {
 					'full_name' : worker.full_name,
 					'job_title' : worker.job_title,
 					'age' : worker.age,
 					'work_exp' : worker.work_exp,
-					'salary' : f'{(salary.total_amount):.1f}'
 				}
 
 				self.entries = {}
@@ -205,20 +287,38 @@ class ChangeFrame(ctk.CTkToplevel):
 		department_id = self.departments.get(self.choose_department.get())
 		projects_id = self.projects.get(self.choose_project.get())
 
-		salary = self.entries['salary'].get()
-		entry_values = [value.get() for key, value in self.entries.items() if key != 'salary']
-		if not all(entry_values) or not salary:
-			print('Не все поля заполнены')
+		#salary = self.entries['salary'].get()
+		entry_values = {key: value.get() for key, value in self.entries.items()}
+		if not all(list(entry_values.values())):
+			exception('Не все поля заполнены')
 			return
-			# ПОМЕНЯТЬ ВСЕ ЭТИ ПРИНТЫ НА ОКНО С ОШИБКОЙ
+	
 		try:
-			salary = float(salary)
+			age = int(entry_values.get('age'))
 		except ValueError:
-			print('Недопустимое значние в поле зарплаты')
+			exception('Недопустимое значение в поле возраста')
 			return
 
-		if abs(salary) == float('inf') or isnan(salary):
-			print('Зарплаты не может являтся INF/NaN')
+		if abs(age) == float('inf') or isnan(age):
+			exception('Возраст не может являтся INF/NaN')
+			return
+
+		if age < 0:
+			exception('Возраст не может быть отрицательным')
+			return
+
+		try:
+			work_exp = int(entry_values.get('work_exp'))
+		except ValueError:
+			exception('Недопустимое значение в поле стажа')
+			return
+
+		if abs(work_exp) == float('inf') or isnan(work_exp):
+			exception('Стаж не может являтся INF/NaN')
+			return
+
+		if work_exp < 0:
+			exception('Стаж не может быть отрицательным')
 			return
 
 		sql = '''
@@ -241,7 +341,7 @@ class ChangeFrame(ctk.CTkToplevel):
 	def departmnet_action(self):
 		name = self.name.get()
 		if not name:
-			print('Не введено имя')
+			exception('Не введено имя')
 			return
 
 		sql = '''
@@ -251,7 +351,7 @@ class ChangeFrame(ctk.CTkToplevel):
 		'''
 		check_name = fetch_one(sql, (name,))
 		if check_name and check_name.get('id') != self.data:
-			print('Такое название уже существует')
+			exception('Такое название уже существует')
 			return
 
 		sql = '''
@@ -285,7 +385,7 @@ class ChangeFrame(ctk.CTkToplevel):
 	def project_action(self):
 		name = self.name.get()
 		if not name:
-			print('Не введено имя')
+			exception('Не введено имя')
 			return
 
 		sql = '''
@@ -295,7 +395,7 @@ class ChangeFrame(ctk.CTkToplevel):
 		'''
 		check_name = fetch_one(sql, (name,))
 		if check_name and check_name.get('id') != self.data:
-			print('Такое название уже существует')
+			exception('Такое название уже существует')
 			return
 
 		sql = '''
@@ -510,20 +610,53 @@ class AddFrame(ctk.CTkToplevel):
 		projects_id = self.projects.get(self.choose_project.get())
 
 		salary = self.entries['salary'].get()
-		entry_values = [value.get() for key, value in self.entries.items() if key != 'salary']
-		if not all(entry_values) or not salary:
-			print('Не все поля заполнены')
+		entry_values = {key: value.get() for key, value in self.entries.items() if key != 'salary'}
+		if not all(list(entry_values.values())) or not salary:
+			exception('Не все поля заполнены')
 			return
-			# ПОМЕНЯТЬ ВСЕ ЭТИ ПРИНТЫ НА ОКНО С ОШИБКОЙ
+	
 		try:
 			salary = float(salary)
 		except ValueError:
-			print('Недопустимое значние в поле зарплаты')
+			exception('Недопустимое значение в поле зарплаты')
 			return
 
 		if abs(salary) == float('inf') or isnan(salary):
-			print('Зарплаты не может являтся INF/NaN')
+			exception('Зарплаты не может являтся INF/NaN')
 			return
+
+		if salary < 0:
+			exception('Зарплата не может быть отрицательной')
+			return
+
+		try:
+			age = int(entry_values.get('age'))
+		except ValueError:
+			exception('Недопустимое значение в поле возраста')
+			return
+
+		if abs(age) == float('inf') or isnan(age):
+			exception('Возраст не может являтся INF/NaN')
+			return
+
+		if age < 0:
+			exception('Возраст не может быть отрицательным')
+			return
+
+		try:
+			work_exp = int(entry_values.get('work_exp'))
+		except ValueError:
+			exception('Недопустимое значение в поле стажа')
+			return
+
+		if abs(work_exp) == float('inf') or isnan(work_exp):
+			exception('Стаж не может являтся INF/NaN')
+			return
+
+		if work_exp < 0:
+			exception('Стаж не может быть отрицательным')
+			return
+
 
 		sql = '''
 			INSERT INTO Worker 
@@ -531,8 +664,21 @@ class AddFrame(ctk.CTkToplevel):
 			VALUES
 			(%s, %s, %s, %s, %s, %s, %s)
 		'''
+		execute(sql, tuple(list(entry_values.values())+[sex, department_id, projects_id]))
 
-		execute(sql, tuple(entry_values+[sex, department_id, projects_id]))
+		sql = '''
+			SELECT max(id) as id
+			FROM Worker 
+		'''
+		_id = fetch_one(sql).get('id')
+
+		sql = '''
+			INSERT INTO Salary
+			(worker_id, total_amount, business_trip_part, work_experience_part) 
+			VALUES 
+			(%s, %s, 0, 0);
+		'''
+		execute(sql, (_id, salary))
 
 		self.master.update_tables()
 		self.destroy()
@@ -540,7 +686,7 @@ class AddFrame(ctk.CTkToplevel):
 	def departmnet_action(self):
 		name = self.name.get()
 		if not name:
-			print('Не введено имя')
+			exception('Не введено имя')
 			return
 
 		sql = '''
@@ -550,7 +696,7 @@ class AddFrame(ctk.CTkToplevel):
 		'''
 		check_name = fetch_one(sql, (name,))
 		if check_name:
-			print('Такое название уже существует')
+			exception('Такое название уже существует')
 			return
 
 		sql = '''
@@ -583,7 +729,7 @@ class AddFrame(ctk.CTkToplevel):
 	def project_action(self):
 		name = self.name.get()
 		if not name:
-			print('Не введено имя')
+			exception('Не введено имя')
 			return
 
 		sql = '''
@@ -593,7 +739,7 @@ class AddFrame(ctk.CTkToplevel):
 		'''
 		check_name = fetch_one(sql, (name,))
 		if check_name:
-			print('Такое название уже существует')
+			exception('Такое название уже существует')
 			return
 
 		sql = '''

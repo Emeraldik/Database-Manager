@@ -77,6 +77,11 @@ zero_department = Department(
 	name='-'
 )
 
+zero_head = ProjectWorker(
+	project_id=0,
+	worker_id=0
+)
+
 def get_workers():
 	sql = 'SELECT * FROM Worker ORDER BY id'
 	result = fetch_all(sql)

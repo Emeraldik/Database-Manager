@@ -9,6 +9,7 @@ from frames.button_frame import DataButtonFrames
 import modules.db_classes as db_get
 from modules.database import fetch_one, fetch_all
 
+
 class MoreInfoFrame(ctk.CTkToplevel):
 	def __init__(self, master, datatype, data, **kwargs):
 		super().__init__(master, **kwargs)
@@ -95,7 +96,7 @@ class MoreInfoFrame(ctk.CTkToplevel):
 								values=(worker._id, worker.full_name, projects_raw.get(worker.project_id, db_get.zero_project).name)
 							)
 					elif i == 1:
-						projects_id = sorted(set([worker.project_id for worker in workers]))
+						projects_id = sorted(set([worker.project_id for worker in workers if worker.project_id]))
 						for project_id in projects_id:
 							project = projects_raw.get(project_id, db_get.zero_project)
 							workers_in_project = len(list(filter(lambda item: item.project_id == project._id, workers_raw.values())))
@@ -106,16 +107,27 @@ class MoreInfoFrame(ctk.CTkToplevel):
 			case 'Проекты':
 				self.title(f'Подробная информация : {self.datatype} ({self.data.get("name")})')
 
-				self.grid_rowconfigure(0, weight=1)
+				self.grid_rowconfigure(2, weight=1)
+				workers_raw = db_get.get_workers()
+				head_worker_in_project = workers_raw.get(db_get.get_head_projects().get(self.data.get('id'), db_get.zero_head).worker_id, db_get.zero_worker)
+
+				label_project = ctk.CTkLabel(self, text=f'Ответственный за проект : {self.data.get("name")}')
+				label_project.grid(row=0, column=0, pady=(15, 5), columnspan=2)
+
+				label_head = ctk.CTkLabel(self, text=f'(ID : {head_worker_in_project._id}) : {head_worker_in_project.full_name}')
+				label_head.grid(row=1, column=0, pady=(15, 5), columnspan=2)
+
+
 				self.tabview = ctk.CTkTabview(self)
 				self.workers_tab = self.tabview.add('Сотрудники')
 				self.departments_tab = self.tabview.add('Отделы')
-				self.tabview.grid(row=0, column=0, sticky='nsew')
+				self.tabview.grid(row=2, column=0, sticky='nsew', pady=(15, 5))
 
 				self.workers_tab.grid_columnconfigure(0, weight=1)
 				self.workers_tab.grid_rowconfigure(0, weight=1)
 				self.departments_tab.grid_columnconfigure(0, weight=1)
 				self.departments_tab.grid_rowconfigure(0, weight=1)
+				
 
 				for i, tab in enumerate((self.workers_tab, self.departments_tab)):
 					if i == 0:
@@ -144,7 +156,6 @@ class MoreInfoFrame(ctk.CTkToplevel):
 
 					treeview.column(0, width=10)
 
-					workers_raw = db_get.get_workers()
 					workers = list(filter(lambda item: item.project_id == self.data.get('id'), workers_raw.values()))
 					departments_raw = db_get.get_departments()
 					if i == 0:
@@ -153,7 +164,7 @@ class MoreInfoFrame(ctk.CTkToplevel):
 								values=(worker._id, worker.full_name, departments_raw.get(worker.department_id, db_get.zero_department).name)
 							)
 					elif i == 1:
-						departments_id = sorted(set([worker.department_id for worker in workers]))
+						departments_id = sorted(set([worker.department_id for worker in workers if worker.department_id]))
 						for department_id in departments_id:
 							department = departments_raw.get(department_id, db_get.zero_department)
 							workers_in_department = len(list(filter(lambda item: item.department_id == department._id, workers_raw.values())))
@@ -241,7 +252,7 @@ class MainDataFrame(ctk.CTkFrame):
 					SELECT w.*, s.total_amount
 					FROM Salary as s
 						join Worker w on s.worker_id = w.id
-					WHERE s.id = %s
+					WHERE s.worker_id = %s
 				'''
 				result = fetch_one(sql, (item['values'][0],))
 
