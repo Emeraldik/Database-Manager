@@ -1,6 +1,7 @@
 import customtkinter as ctk
-import config as cfg
-from frames.navigation_frame import NavigationBar
+
+import db_manager.config as cfg
+from db_manager.frames.navigation_frame import NavigationBar
 
 class App(ctk.CTk):
 	def __init__(self):

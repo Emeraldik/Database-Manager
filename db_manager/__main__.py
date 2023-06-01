@@ -1,6 +1,6 @@
 import customtkinter as ctk
 
-import frames.main_frame as mf
+import db_manager.frames.main_frame as mf
 
 
 def main():

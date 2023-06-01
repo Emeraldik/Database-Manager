@@ -1,6 +1,6 @@
 import customtkinter as ctk
-from frames.data_frame import MainDataFrame
-from frames.button_frame import NavigationButton
+from db_manager.frames.data_frame import MainDataFrame
+from db_manager.frames.button_frame import NavigationButton
 
 class NavigationBar(ctk.CTkFrame):
 	def __init__(self, master, **kwargs):

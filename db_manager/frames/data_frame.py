@@ -5,9 +5,9 @@ from tkinter import ttk
 
 from dataclasses import asdict
 
-from frames.button_frame import DataButtonFrames
-import modules.db_classes as db_get
-from modules.database import fetch_one, fetch_all
+from db_manager.frames.button_frame import DataButtonFrames
+import db_manager.modules.db_classes as db_get
+from db_manager.modules.database import fetch_one, fetch_all
 
 
 class MoreInfoFrame(ctk.CTkToplevel):

@@ -2,9 +2,9 @@ import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
 
-import modules.db_classes as db_get
-from modules.database import execute, fetch_one
-from frames.exception_frame import exception
+import db_manager.modules.db_classes as db_get
+from db_manager.modules.database import execute, fetch_one
+from db_manager.frames.exception_frame import exception
 
 from math import isnan
 

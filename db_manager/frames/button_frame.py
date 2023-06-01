@@ -1,9 +1,9 @@
 import customtkinter as ctk
 
-from modules.database import execute
-from frames.extra_frame import AddFrame, ChangeFrame, HeadFrame
-from frames.salary_frame import ChangeSalary, BusinessTripFrame
-from frames.exception_frame import exception
+from db_manager.modules.database import execute
+from db_manager.frames.extra_frame import AddFrame, ChangeFrame, HeadFrame
+from db_manager.frames.salary_frame import ChangeSalary, BusinessTripFrame
+from db_manager.frames.exception_frame import exception
 
 
 class NavigationButton(ctk.CTkButton):

@@ -4,9 +4,9 @@ from tkinter import ttk
 
 from math import isnan
 
-import modules.db_classes as db_get
-from modules.database import execute, fetch_one
-from frames.exception_frame import exception
+import db_manager.modules.db_classes as db_get
+from db_manager.modules.database import execute, fetch_one
+from db_manager.frames.exception_frame import exception
 
 
 class HeadFrame(ctk.CTkToplevel):

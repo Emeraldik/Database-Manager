@@ -5,7 +5,7 @@ from typing import Any
 from collections.abc import Iterable
 from typing_extensions import LiteralString
 
-from config import DB_USER, DB_PASS
+from db_manager.config import DB_USER, DB_PASS
 
 def get_db():
 	if not getattr(get_db, 'db', None):

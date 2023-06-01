@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from modules.database import fetch_all
+from db_manager.modules.database import fetch_all
 
 @dataclass()
 class Department():
