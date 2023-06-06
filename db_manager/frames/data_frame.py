@@ -11,8 +11,8 @@ from db_manager.modules.database import fetch_one, fetch_all
 
 
 class MoreInfoFrame(ctk.CTkToplevel):
-	def __init__(self, master, datatype, data, **kwargs):
-		super().__init__(master, **kwargs)
+	def __init__(self, datatype, data, **kwargs):
+		super().__init__(**kwargs)
 		self.datatype = datatype
 		self.data = data
 		
@@ -175,7 +175,7 @@ class MoreInfoFrame(ctk.CTkToplevel):
 
 
 class MainDataFrame(ctk.CTkFrame):
-	def __init__(self, master, nav_frame, datatype, **kwargs):
+	def __init__(self, master, datatype, **kwargs):
 		super().__init__(master, **kwargs)
 		self.datatype = datatype
 

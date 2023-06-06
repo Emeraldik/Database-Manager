@@ -61,14 +61,14 @@ class NavigationBar(ctk.CTkFrame):
 
 		self.frames = {}
 		for frame_name in ('Список персонала', 'Отделы', 'Проекты', 'Распределение зарплаты сотрудников'):
-			frame = MainDataFrame(self.master, self, datatype=frame_name)
+			frame = MainDataFrame(self.master, datatype=frame_name)
 			frame.grid(row=0, column=1, padx=(5, 5), sticky="nsew")
 			self.frames[frame_name] = frame
 
 		self.selected_frame = ''
 		self.select_frame_by_name('Список персонала')
 
-	def select_frame_by_name(self, name, button=None):
+	def select_frame_by_name(self, name):
 		if self.selected_frame == name:
 			return
 

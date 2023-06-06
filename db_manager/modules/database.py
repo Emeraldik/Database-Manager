@@ -52,17 +52,6 @@ def execute(
 	cursor.close()
 
 
-def executescript(
-	sql: LiteralString, *, autocommit: bool = True
-) -> None:
-	db = get_db()
-	cursor = _get_cursor(sql)
-	if autocommit:
-	   db.commit()
-
-	cursor.close()
-
-
 def close_db() -> None:
 	get_db().close()
 

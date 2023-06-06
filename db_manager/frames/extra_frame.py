@@ -1,6 +1,6 @@
-import customtkinter as ctk
 import tkinter as tk
 from tkinter import ttk
+import customtkinter as ctk
 
 from math import isnan
 
@@ -167,7 +167,7 @@ class ChangeFrame(ctk.CTkToplevel):
 				self.create_tables()
 				self.update_tables()
 
-				self.accept_button = ctk.CTkButton(self, text='Подтвердить запись нового отдела', anchor='center', command=self.departmnet_action)
+				self.accept_button = ctk.CTkButton(self, text='Подтвердить запись изменений отдела', anchor='center', command=self.departmnet_action)
 				self.accept_button.grid(row=3, column=0, pady=(15, 5), columnspan=4)
 
 
@@ -186,7 +186,7 @@ class ChangeFrame(ctk.CTkToplevel):
 				self.create_tables()
 				self.update_tables()
 
-				self.accept_button = ctk.CTkButton(self, text='Подтвердить запись нового проекта', anchor='center', command=self.project_action)
+				self.accept_button = ctk.CTkButton(self, text='Подтвердить запись изменений проекта', anchor='center', command=self.project_action)
 				self.accept_button.grid(row=3, column=0, pady=(15, 5), columnspan=5)
 	
 	def create_tables(self):
